@@ -1,0 +1,75 @@
+﻿@using Common
+@inject HttpUtil _httpUtil
+@using System.Runtime.InteropServices
+@inherits LayoutComponentBase
+@inject ITelerikStringLocalizer L
+@inject ILocalStorageService LocalStorage
+@inject NavigationManager NavigationManager
+@inject MenuComponent MenuComponent
+
+@* @Body and other code will be present here depending on your project *@
+
+
+<TelerikRootComponent >
+    <div class="header">
+        <div class="nav-container">
+            <div class="menu-button">
+                <TelerikButton Icon="menu" OnClick="@ToggleMenuDrawer" />
+            </div>
+             <div class="title">
+                <h1>.NET 6 Framework</h1>
+            </div>
+            <UserProfile OnToggle="ToggleMenuDrawer"></UserProfile>
+            <div class="settings">
+                <TelerikButton Icon="gear" OnClick="@GoToRuntimeInfo" />
+            </div>
+        </div>
+    </div>
+    <TelerikDrawer @ref="MenuDrawer"
+                   Expanded="@Expanded"
+                   ExpandedChanged="((bool newValue) => ExpandedChangedHandler(newValue))"
+                   Width="280px" Data="MenuComponent.GetMenuItems()" Mode="DrawerMode.Push" Position="DrawerPosition.Left" >
+        <Template>
+            <DrawTemplate Data="context"></DrawTemplate>
+        </Template>
+        <DrawerContent>
+            <div class="contentbody">
+                @Body
+</div>
+        </DrawerContent>
+    </TelerikDrawer>
+</TelerikRootComponent>
+
+
+@code {
+    bool Expanded { get; set; }
+    TelerikDrawer<DrawerItem> MenuDrawer { get; set; }
+    protected override async Task OnInitializedAsync() {
+        await SetDrawerState();
+    }
+    #region Menu Drawer
+    async Task SetDrawerState() {
+        await LocalStorage.SetItemAsync("drawerState", false);
+        Expanded = false;
+    }
+    async Task ToggleMenuDrawer() {
+        var expanded = await LocalStorage.GetItemAsync<bool>("drawerState");
+        if (expanded) {
+            await MenuDrawer.CollapseAsync();
+        } else {
+            await MenuDrawer.ExpandAsync();
+        }
+        await LocalStorage.SetItemAsync("drawerState", !expanded);
+    }
+    async Task ExpandedChangedHandler(bool value) {
+        if (MenuDrawer.Data.Count() == 0) {
+             MenuDrawer.Data = MenuComponent.GetMenuItems();
+        }
+        Expanded = value;
+        await LocalStorage.SetItemAsync("drawerState", value);
+    }
+    async Task GoToRuntimeInfo() {
+         NavigationManager.NavigateTo("runtimeinfo");
+    }
+    #endregion
+}

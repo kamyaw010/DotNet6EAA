@@ -1,15 +1,21 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
+    <Configurations>Debug;Release;SpecFlow</Configurations>
+
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="Interfaces\**" />
+    <Compile Remove="Message\**" />
     <EmbeddedResource Remove="Interfaces\**" />
+    <EmbeddedResource Remove="Message\**" />
     <None Remove="Interfaces\**" />
+    <None Remove="Message\**" />
   </ItemGroup>
 
 </Project>

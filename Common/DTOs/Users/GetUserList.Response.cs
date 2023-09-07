@@ -1,8 +1,6 @@
 ﻿
-namespace Common.DTOs.Users
-{
-    public class UserInfoDTO
-    {
+namespace Common {
+    public class UserInfoDTO : DTObaseResponse {
         public int Id { get; set; }
         public string UserName { get; set; }
 
@@ -15,5 +13,7 @@ namespace Common.DTOs.Users
 
         public int? DepartmentId { get; set; }
         public string? DepartmentName { get; set; }
+        public float CoefficientsSalary { get; set; }
+        public PayslipDTO[]? PayslipDTOs {get; set;}
     }
 }

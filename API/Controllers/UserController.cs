@@ -1,42 +1,82 @@
-﻿using Common.DTOs.Users;
+﻿using Common;
 using Microsoft.AspNetCore.Mvc;
-using Service.Users;
+using Service;
+using Data;
+using System.Net;
 
-namespace API.Controllers
-{
+namespace API {
     [ApiController]
     [Route("users")]
-    public class UserController : ControllerBase
-    {
+    [AutoValidateAntiforgeryToken]
+    public class UserController : ControllerBase {
         private readonly UserService _service;
         private readonly ILogger<UserController> _logger;
+        private readonly IPaymentQuery _paymentQuery;
+        private readonly IDepartmentQuery _departmentQuery;
 
         public UserController(ILogger<UserController> logger
-            , UserService service)
-        {
+            , UserService service, IPaymentQuery paymentquery,
+            IDepartmentQuery _departmentquery) {
             _service = service;
             _logger = logger;
+            _paymentQuery = paymentquery;
+            _departmentQuery = _departmentquery;
         }
 
         [HttpGet(Name = "GetUserList")]
-        public async Task<IActionResult> Get([FromQuery] GetUserRequest request)
-        {
-            var users = await _service.SearchAsync(request);
+        [AccessCodeAuthorize("AA01")]
+        public async Task<IActionResult> Get([FromQuery] GetUserRequestV1 request) {
+            var users = await _service.SearchAsyncV1(request);
+            return Ok(users);
+        }
+
+        [HttpPost]
+        [Route("getuserlist")]
+        [AccessCodeAuthorize("AA01")]
+        public async Task<IActionResult> Get([FromBody] GetUserRequest request) {
+            GetAllDatasResponse<UserInfoDTO> users = await _service.SearchAsync(request);
             return Ok(users);
         }
 
         [HttpPost(Name = "AddNewUser")]
-        public async Task<IActionResult> Add([FromBody] AddUserRequest request)
-        {
-            var users = await _service.AddNewAsync(request);
-            return Ok(users);
+        [AccessCodeAuthorize("AB01")]
+        public async Task<IActionResult> Add([FromBody] AddUserRequest request) {
+            AddUserResponse response;
+            request.Refresh(HttpContext.User.Identity.Name, DateTime.Now);
+            response = await _service.AddNewAsync(request);
+            return Ok(response);
         }
 
-        [HttpPost("payslips")]
-        public async Task<IActionResult> AddPayslip([FromBody] AddPayslipRequest request)
-        {
-            var users = await _service.AddUserPayslipAsync(request);
-            return Ok(users);
+        [HttpPost("Addpayslip")]
+        [AccessCodeAuthorize("AC01")]
+        public async Task<IActionResult> AddPayslip([FromBody] AddPayslipRequest request) {
+            AddPayslipResponse _response;
+            request.Refresh(HttpContext.User.Identity.Name, DateTime.Now);
+            _response = await _service.AddUserPayslipAsync(request);
+            return Ok(_response);
+        }
+
+        [HttpGet("GetPayslip")]
+        [AccessCodeAuthorize("AA01")]
+        public async Task<IActionResult> GetPayslip([FromQuery] GetPayslipRequest request) {
+            var payslips = await _service.SearchAsync(request);
+            return Ok(payslips);
+        }
+        [HttpGet("GetPaymentStat")]
+        [AccessCodeAuthorize("AA01")]
+        [ProducesResponseType(typeof(IEnumerable<PaymentSummary>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<PaymentSummary>>> GetPaymentOfFrequentWorkers(int days) {
+            var paymentSummary = await _paymentQuery.GetPaymentOfFrequentWorkersAsync(days);
+
+            return Ok(paymentSummary);
+        }
+        [HttpGet("GetDepartmentList")]
+        [AccessCodeAuthorize("AA01")]
+        [ProducesResponseType(typeof(IEnumerable<Dep>), (int)HttpStatusCode.OK)]
+        public async Task<ActionResult<IEnumerable<Dep>>> GetDepartments() {
+            IEnumerable<Dep> departmentList = await _departmentQuery.GetDepartmentsAsync();
+
+            return Ok(departmentList);
         }
     }
 }

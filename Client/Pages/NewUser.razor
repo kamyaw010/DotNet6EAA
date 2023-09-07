@@ -1,0 +1,99 @@
+﻿@page "/adduser"
+@using Common
+@using System.Text.Json
+
+@inject HttpUtil _httpUtil
+<h3>Create New User</h3>
+<TelerikForm Model="@_newuser"
+                         Width="300px"
+                         >
+                <FormItems>
+                    <FormItem LabelText="User Name" Field="@nameof(_newuser.UserName)" ></FormItem>
+                    <FormItem LabelText="First Name" Field="@nameof(_newuser.FirstName)"></FormItem>
+                    <FormItem LabelText="Last Name" Field="@nameof(_newuser.LastName)"></FormItem>
+                    <FormItem LabelText="Address" Field="@nameof(_newuser.Address)"></FormItem>
+                    <FormItem LabelText="BirthDate" Field="@nameof(_newuser.BirthDate)"></FormItem>
+                    
+
+                    <FormItem Field="@nameof(_newuser.DepartmentName)">
+                        <Template>
+                            <label class="k-label k-form-label">Department:</label>
+                            <TelerikDropDownList Data="@deps"
+                                                 @bind-Value="@_newuser.DepartmentName"
+                                                 TextField="DepartmentName"
+                                                 ValueField="DepartmentName"
+                                                 DefaultText="Select"
+                                                 Id="DepartmentName"
+                                                 Width="100%">
+                                <DropDownListSettings>
+                                    <DropDownListPopupSettings Height="auto"></DropDownListPopupSettings>
+                                </DropDownListSettings>
+                            </TelerikDropDownList>
+                        </Template>
+                    </FormItem>
+                    <FormItem LabelText="Coefficients Salary" Field="@nameof(_newuser.CoefficientsSalary)"></FormItem>
+                </FormItems>
+                <FormButtons>
+                    <TelerikButton Icon="Add" ButtonType="ButtonType.Button" ThemeColor="@(ThemeConstants.Button.ThemeColor.Primary)" OnClick="@Send">Submit</TelerikButton>
+                </FormButtons>
+            </TelerikForm>
+
+  <div class="spinner" hidden=@_notspinning></div>
+    <div>
+        <TelerikNotification @ref="_notificationComponent"
+                             HorizontalPosition="@NotificationHorizontalPosition.Center"
+                             VerticalPosition="@NotificationVerticalPosition.Top"></TelerikNotification>
+    </div>
+
+@code {
+    private TelerikNotification _notificationComponent { get; set; }
+    private AddUserRequest _newuser;
+    private string _message;
+    private bool _notspinning = true;
+    private bool _completed = false;
+    private Dep[] deps;
+
+    protected override async Task OnInitializedAsync() {
+        _newuser = new AddUserRequest();
+        var response = await _httpUtil.GetAsync("users/GetDepartmentList");
+        var content = await response.Content.ReadAsStringAsync();
+        if (response.IsSuccessStatusCode) {
+            deps = JsonSerializer.Deserialize<Dep[]>(content, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        } else {
+            _message = "Error: " + await response.Content.ReadAsStringAsync();
+            ShowErrorNotifications(_message);
+        }
+        _newuser.DepartmentName = "IT";
+    }
+    async Task Send() {
+        _message = "";
+        _completed = true;
+        _notspinning = false;
+        var result = await _httpUtil.PostAsJsonAsync("users", _newuser);
+        _notspinning = true;
+        if (result.IsSuccessStatusCode) {
+            AddUserResponse response = await result.Content.ReadFromJsonAsync<AddUserResponse>();
+            _message = "Created ID:" + response.Id
+                + "\nUser Name=" + response.UserName
+                + "\nin Department - " + response.DepartmentName;
+            ShowSuccessNotifications(_message);
+        } else {
+            _message = "Error: " + await result.Content.ReadAsStringAsync();
+            ShowErrorNotifications(_message);
+        }
+    }
+     public void ShowSuccessNotifications(string message) {
+            _notificationComponent.Show(new NotificationModel {
+                Text = message,
+                ThemeColor = "success",
+                CloseAfter = 0
+            });
+        }
+        public void ShowErrorNotifications(string message) {
+            _notificationComponent.Show(new NotificationModel {
+                Text = message,
+                ThemeColor = "error",
+                CloseAfter = 0
+            });
+        }
+}

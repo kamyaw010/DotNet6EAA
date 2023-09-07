@@ -4,39 +4,77 @@
     <TargetFramework>net6.0</TargetFramework>
 	<Nullable>enable</Nullable>
 	<ImplicitUsings>enable</ImplicitUsings>
+	<CodeAnalysisRuleSet></CodeAnalysisRuleSet>
+	<Configurations>Debug;Release;SpecFlow</Configurations>
+
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="DTOs\**" />
     <Compile Remove="Extensions\**" />
+    <Compile Remove="logs\**" />
     <Compile Remove="Migrations\**" />
     <Content Remove="DTOs\**" />
     <Content Remove="Extensions\**" />
+    <Content Remove="logs\**" />
     <Content Remove="Migrations\**" />
     <EmbeddedResource Remove="DTOs\**" />
     <EmbeddedResource Remove="Extensions\**" />
+    <EmbeddedResource Remove="logs\**" />
     <EmbeddedResource Remove="Migrations\**" />
     <None Remove="DTOs\**" />
     <None Remove="Extensions\**" />
+    <None Remove="logs\**" />
     <None Remove="Migrations\**" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Autofac.Extensions.DependencyInjection" Version="7.2.0" />
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="11.0.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.2">
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="6.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="6.0.3" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.8.5" />
+    <PackageReference Include="System.Drawing.Common" Version="6.0.0" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="6.22.0" />
+    <PackageReference Include="System.Net.Http" Version="4.3.4" />
+    <PackageReference Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageReference Include="Telerik.Documents.Core" Version="2022.1.217" />
+    <PackageReference Include="Telerik.Documents.Fixed" Version="2022.1.217" />
+    <PackageReference Include="Telerik.Documents.Flow" Version="2022.1.217" />
+    <PackageReference Include="Telerik.Documents.Spreadsheet" Version="2022.1.217" />
+    <PackageReference Include="Telerik.Reporting.Services.AspNetCore" Version="16.0.22.225" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Client\Client.csproj" />
     <ProjectReference Include="..\Data\P3.Data.csproj" />
+    <ProjectReference Include="..\DocumentProcessing\P8.DocumentProcessing.csproj" />
+    <ProjectReference Include="..\Migrator\P7.Migrator.csproj" />
     <ProjectReference Include="..\Service\P2.Service.csproj" />
   </ItemGroup>
 	
   <ItemGroup>
 	<InternalsVisibleTo Include="P6.StoryTest" />
   </ItemGroup>
+	
+  <ItemGroup>
+    <None Update="Reports\FrequentUsers.trdp">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+	
+  <!-- Uncomment ItemGroup to enable NServiceBus -->
+   <!--<ItemGroup>
+	  <PackageReference Include="NServiceBus" Version="7.7.0" />
+    <ProjectReference Include="..\ServiceBusDemo\Messages\X1.Messages.csproj" />
+  </ItemGroup>--> 
+
+
 </Project>

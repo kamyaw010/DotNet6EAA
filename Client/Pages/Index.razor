@@ -1,0 +1,40 @@
+﻿@page "/"
+@using Common
+@inject HttpUtil _httpUtil
+@using System.Runtime.InteropServices
+@inject IJSRuntime JS
+
+<PageTitle>Index</PageTitle>
+<h1>Welcome</h1>
+<input BackgroundColor="Transparent" Placeholder="Enter your Message"  
+    @bind="parm" Margin="4,0" x:Name="Url" PlaceholderColor="Gray" />
+<button class="btn btn-primary" @onclick="CallMAUITask">FingerPrint</button>
+<p>Return from MAUI: @result</p>
+
+@code {
+    private static Index module;
+    private string? result;
+    private string parm = "";
+
+    protected override async Task OnInitializedAsync() {
+        var message = "";
+        message = await JS.InvokeAsync<string>("callMAUIJS", "getPMessage", 3, "");
+        if (!message.Contains("invokeMAUIAction is not defined")) {
+            parm = message;
+        }
+    }
+    protected override void OnInitialized() {
+        module = this;
+    }
+    private async Task CallMAUITask() {
+        result = await JS.InvokeAsync<string>("callMAUIJS","getFingerPrint", 60, parm);
+    }
+    [JSInvokable]
+    public static string? setMessage(string message) {
+        module.parm = message;
+        module.InvokeAsync(() => {
+            module.StateHasChanged();
+        });
+        return null;
+    }
+}
